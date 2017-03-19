@@ -1,0 +1,260 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>温室大棚控制系统_实时监控</title>
+</head>
+
+<script language="javascript">
+function RefreshImg()
+{
+	var url = "/?action=snapshot"+new Date().getTime();
+	var img = document.getElementById("img");
+	img.src = url;
+	setTimeout("RefreshImg()",100);
+}
+/*****************环境信息**************************/
+/****温度显示***/
+var tmp_cmd = 0;
+function showtemp()
+{	
+	var tmp_xmlhttp;	
+	if (window.XMLHttpRequest)
+	{
+		tmp_xmlhttp=new XMLHttpRequest();
+	}
+	else
+	{
+		tmp_xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	
+	tmp_xmlhttp.open("POST","/index.html?tempshow",true);
+	tmp_xmlhttp.send();
+	
+	var tempshow = document.getElementById("tempshow");
+	var TMP = document.getElementById("TMP");
+	
+		
+	tmp_xmlhttp.onreadystatechange=function()
+	{
+		if (tmp_xmlhttp.readyState==4 && tmp_xmlhttp.status==200)
+		{	
+			if(TMP.value == "ON")  
+				tempshow.value = tmp_xmlhttp.responseText;
+			else
+				tempshow.value = "";	
+		}		
+	} 
+	if(tmp_cmd == 1)
+		setTimeout("showtemp()", 1000); 				
+}
+
+function TempShow(obj)
+{
+	var OBJ = document.getElementById(obj.id);
+	if(OBJ.value == "ON")
+		OBJ.value = "OFF";
+	else
+		OBJ.value = "ON";
+		
+	var TMP = document.getElementById("TMP");
+	var tempshow = document.getElementById("tempshow");
+	
+	if(TMP.value == "ON")
+		if(tmp_cmd == 0)
+		{
+			 tmp_cmd = 1;
+			 showtemp();
+		}
+		else
+		{
+			showtemp();
+		}
+	else
+	{
+		tempshow.value = "";
+		tmp_cmd = 0;
+	}
+				
+}
+
+/*******湿度显示*******/
+var rh_cmd = 0;
+function showrh()
+{
+	var xmlhttp;
+	if (window.XMLHttpRequest)
+	{
+		xmlhttp=new XMLHttpRequest();
+	}
+	else
+	{
+		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	
+	xmlhttp.open("POST","/index.html?rhshow",true);
+	xmlhttp.send();	
+	
+	var rhshow = document.getElementById("rhshow");
+	var RH = document.getElementById("RH");
+	
+	xmlhttp.onreadystatechange=function()
+	{
+		if (xmlhttp.readyState==4 && xmlhttp.status==200)
+		{
+			if(RH.value == "ON")
+			{	
+				rhshow.value = xmlhttp.responseText;			
+			}
+			else
+			{	
+				rhshow.value = "";
+			}
+		}		
+	} 	
+	
+	if(rh_cmd == 1)
+		setTimeout("showrh()",1000);
+}
+
+function RhShow(obj)
+{	
+	var OBJ = document.getElementById(obj.id);
+	if(OBJ.value == "ON")
+		OBJ.value = "OFF";
+	else
+		OBJ.value = "ON";
+		
+	var RH = document.getElementById("RH");	
+	var rhshow = document.getElementById("rhshow");
+
+	if(RH.value == "ON")
+		if(rh_cmd == 0)
+		{
+			rh_cmd = 1;
+			showrh();		
+		}
+		else
+		{
+			showrh();	
+		}
+	else
+	{	
+		rhshow.value = "";
+		rh_cmd = 0;
+	}
+}
+
+/***************光照显示**************/
+var cd_cmd;
+function showlight()
+{	
+	var xmlhttp;
+	if (window.XMLHttpRequest)
+	{
+		xmlhttp=new XMLHttpRequest();
+	}
+	else
+	{
+		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	
+	xmlhttp.open("POST","/index.html?lightshow",true);
+	xmlhttp.send();	
+	
+	var lightshow = document.getElementById("lightshow");
+	var CD = document.getElementById("CD");
+	
+	xmlhttp.onreadystatechange=function()
+	{
+		if (xmlhttp.readyState==4 && xmlhttp.status==200)
+		{
+			if(CD.value == "ON")
+				lightshow.value = xmlhttp.responseText;	
+			else
+				lightshow.value = "";						
+		}		
+	} 	
+	if(cd_cmd == 1);
+		setTimeout("showlight()",1000);
+}
+
+function LightShow(obj)
+{
+	var OBJ = document.getElementById(obj.id);
+	if(OBJ.value == "ON")
+		OBJ.value = "OFF";
+	else
+		OBJ.value = "ON";
+
+	var CD = document.getElementById("CD");
+	var lightshow = document.getElementById("lightshow");
+				
+	if(CD.value == "ON")
+		if(cd_cmd == 0)
+		{
+			cd_cmd = 1;
+			showlight();
+		}
+		else
+		{
+			showlight();
+		}
+	else
+	{	
+		lightshow.value = "";
+		cd_cmd = 0;
+	}					
+}
+
+/**********************************************/
+</script>
+
+<body background="/?beijing2">
+<div style="text-align:center; height:150px; width:1350px">
+<br />
+    <h1><font style="font-size:45px"><b>温室大棚控制系统</b></font></h1>
+</div>
+
+<table width="1350" height="390" border="1">
+  <tr>
+    <th width="218" height="188" rowspan="2"scope="row"><br/>
+      <div text style="font-size:24px; height:400px" ><ul>
+          <li style="float:left"><a href="introduce.html">大棚简介</a></li><br/><br/>
+          <li style="float:left"><a href="env.html">环境信息</a></li><br/> <br/>
+          <li style="float:left"><a href="video.html">实时监控</a></li><br/> <br/>
+          <li style="float:left"><a href="mailto:1182813588@qq.com">Call me</a></li><br/> <p>&nbsp;</p>
+      </ul></div></th>
+      
+    <td width="664px">
+          <img name="img" id="img" src="/?action=snapshot" width="670" height="419" /> </td>
+    <td width="438px">
+    	 <div style="height:75px">
+            <h2><strong>&nbsp;&nbsp;Greenhouse System</strong></h2>
+        	<h3><em>&nbsp;&nbsp;real-time enviroment information </em></h3></div>
+     	<p style="color:#000; padding-left:80px">
+        温度显示
+        <input type="text" id="tempshow" value="readonly" style="width:100px; height:25px" />
+        <input  type="button" id="TMP" value="OFF" onclick="TempShow(this)"  style="width:60px; height:35px" /></p>
+        <p style="color:#000; padding-left:80px">
+        湿度显示
+        <input type="text"  id="rhshow" value="readonly" style="width:100px; height:25px"/>
+		<input type="button" id="RH" value="OFF" onclick="RhShow(this)"  style="width:60px; height:35px"/> </p>
+        <p style="color:#000; padding-left:80px">
+        光照显示
+        <input type="text"  id="lightshow" value="readonly" style="width:100px; height:25px"/>
+		<input type="button" id="CD" value="OFF" onclick="LightShow(this)"  style="width:60px; height:35px"/> </p>
+		<p style="color:#66C; padding-left:180px"><br/>
+		<input type="button" value="Start" onclick="RefreshImg()" style=" width:60px; height:35px""/></p></td> </tr>
+		
+		
+</table>
+
+<div align="center" style="height:55px; width:1342px"><br/>
+   版权信息© 2016 our Intelligent Greenhouse System
+</div>
+      	     	
+</body>
+</html>
+
+      

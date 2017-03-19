@@ -1,0 +1,8 @@
+#ifndef MYICONV_H
+#define MYICONV_H
+int covert(char *desc,char *src,char *input,size_t ilen,char *output,size_t     olen);
+int len(char * head,int a);
+int swp(char *tostr);
+int iconv_fun(char *input,char **output,int str_len)  ;
+
+#endif

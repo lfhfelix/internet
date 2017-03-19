@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:background="@drawable/background"
+    android:id="@+id/background_act"
+  >
+
+    <TextView 
+        android:id="@+id/tv_background_act"
+        android:layout_width="1000px"
+        android:layout_height="wrap_content"
+        android:text = "欢 迎 登 陆 基 于 物 联 网 的 温 室 大 棚 控 制 系 统"
+        android:singleLine="true"
+        android:layout_centerInParent="true"
+        android:layout_centerVertical="true"
+        android:textSize="25sp"
+        android:background="#00777777"
+        android:marqueeRepeatLimit="marquee_forever"
+		android:ellipsize="marquee" 
+		android:scrollHorizontally="true"
+		android:focusableInTouchMode="true"
+		android:focusable="true"
+        />
+	<EditText 
+	    android:layout_below="@+id/tv_background_act"
+	    android:id="@+id/et_ip_background"
+	    android:layout_centerInParent="true"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text="192.168.2.238"
+	    android:background="@null"
+	    
+	    />
+		<EditText 
+		android:layout_below="@+id/et_ip_background"
+	    android:id="@+id/et_port_background"
+	    android:layout_width="wrap_content"
+	    android:layout_centerInParent="true"
+	    android:layout_height="wrap_content"
+	    android:text="28888"
+	    android:background="@null"
+	    />
+		<TextView 
+		android:layout_below="@+id/et_port_background"
+	    android:id="@+id/tv_background_client"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:hint="暂无连接"/>
+    <Button 
+        android:id="@+id/btn_background_act"
+        android:layout_below="@+id/tv_background_client"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="连接服务器"
+        />
+
+    
+
+</RelativeLayout>

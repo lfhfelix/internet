@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>温室大棚控制系统</title>
+
+</head>
+
+<script language="javascript">
+/*******************login*******************/
+	function loginShow()
+	{
+		name=document.myform.name.value;
+		password=document.myform.password.value;
+		var tag;		
+		var xmlhttp;
+		
+		if (window.XMLHttpRequest)
+		{
+			xmlhttp=new XMLHttpRequest();
+		}
+		else
+		{
+			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+				
+		xmlhttp.onreadystatechange=function()
+		{
+			if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				tag=xmlhttp.responseText;
+				if(tag=="true")
+				{
+					//window.location.href = 'http://192.168.2.116:8080/main.html';
+					window.location.href = "main.html";
+				}
+				if(tag=="false")
+				{
+					alert("用户名或密码错误！");
+				}
+			}			
+		}    				
+		var tmp ="/index.html?login" +"1|"+ name+"2|" + password+"3|";
+		xmlhttp.open("POST" ,tmp,true);
+		xmlhttp.send();
+
+	//	if((myform.name.value=="")&&(myform.password.value==""))
+	//window.location.href = 'http://192.168.2.116:8080/main.html';
+	}
+	
+/************regist****************/
+function registShow()
+	{
+		name=document.myform.name.value;
+		password=document.myform.password.value;
+		var tag;		
+		var xmlhttp;
+		
+		if (window.XMLHttpRequest)
+		{
+			xmlhttp=new XMLHttpRequest();
+		}
+		else
+		{
+			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+				
+		xmlhttp.onreadystatechange=function()
+		{
+			if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				tag=xmlhttp.responseText;
+				if(tag=="true")
+				{
+					alert("恭喜您，注册成功啦！");
+					window.location.href = "main.html";
+				}
+				if(tag=="false")
+				{
+					alert("sorry  注册失败，请重新注册吧！");
+				}
+			}		
+		}    
+				
+		var tmp ="/index.html?regist" +"1|"+ name+"2|" + password+"3|";
+		xmlhttp.open("POST" ,tmp,true);
+		xmlhttp.send();
+	}
+	
+/************reset***************/	
+	function resetShow()
+	{
+		document.myform.name.value="";
+		document.myform.password.value="";	
+	}
+	
+/*********/
+</script>
+
+<body background="/?beijing1">
+<hr />
+<br>
+<h1 align="center"><font style="font-size:45px; color:#999"><b><marquee>温室大棚控制系统</marquee></b></font></h1>
+<br>
+<hr />
+<table border="0" align="center" width="801" height="300">
+	<td width="240">
+
+	</td>
+	<td width="307" align="center">
+		<h1><p size="20dp"><font color="#000"><b>用户登录</b></font></p></h1>
+  <br>
+		<form id="forml" name="myform">				
+			<p><font style="font-size:25px; color:#000">
+			<b>账 号 ：</b></font>
+			<input type="text" name="name" value="" style="width:140px; height:30px"/>
+			<br>
+			<p><font style="font-size:25px;  color:#000">
+			<b>密 码 ：</b></font>
+			<input type="password" name="password" value="" style="width:140px; height:30px"/>
+		</form>				
+		<br>
+		<input type="button" id="login" value="登录" onclick="loginShow()" style="background-color: #999; text-align:center; width:65px; height:40px"/>
+		<input type="button" id="regist" value="注册" onclick="registShow()" style="margin-left:20px;background-color:#999; text-align:center; width:65px; height:40px"/>
+		<input type="button" id="reset" value="重置" onclick="resetShow()" style="margin-left:20px; background-color:#999; text-align:center; width:65px; height:40px"/>					
+	</td>
+    <td width="240">
+    	</td>
+</table>
+<div align="center" style="height:55px; margin-top:30px"><br/>
+   版权信息© 2016 Intelligent Greenhouse System Of Hello World
+</div> 
+  
+</body>
+</html>

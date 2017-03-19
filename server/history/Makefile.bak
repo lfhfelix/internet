@@ -1,0 +1,29 @@
+OBJS := web.o sqlite.o socket.o msg.o modules.o entry.o camera.o
+CFLAGS := -c -Wall -O2
+APP := a.out
+CC := gcc 
+#DIR := pwd
+LIB := -lsqlite3 -ljpeg -lpthread
+
+app: $(OBJS)
+	$(CC) $^ -o $(APP) $(LIB)
+	#cp $(APP) $(DIR)
+entry.o: entry.c entry.h
+	$(CC) $(CFLAGS) $< -o $@
+web.o: web.c web.h
+	$(CC) $(CFLAGS) $< -o $@
+sqlite.o: sqlite.c sqlite.h
+	$(CC) $(CFLAGS) $< -o $@
+socket.o: socket.c socket.h
+	$(CC) $(CFLAGS) $< -o $@
+serial8.o: serial8.c serial8.h
+	$(CC) $(CFLAGS) $< -o $@
+msg.o: msg.c msg.h
+	$(CC) $(CFLAGS) $< -o $@
+modules.o: modules.c modules.h
+	$(CC) $(CFLAGS) $< -o $@
+camera.o: camera.c camera.h
+	$(CC) $(CFLAGS) $< -o $@
+
+clean:
+	$(RM) $(APP) $(OBJS)

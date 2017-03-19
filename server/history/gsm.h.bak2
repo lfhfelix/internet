@@ -1,0 +1,36 @@
+#ifndef _GSM_H_
+#define _GSM_H_
+
+typedef struct
+{
+		char phone[15];
+		char news[256];		
+		
+		
+}send_MSG;
+
+
+typedef struct
+{
+		char phone[15];
+		char news[1024];
+		char time[36];
+		
+		
+}recv_MSG;
+
+int change_sendphone_t(char phone[20]);
+int change_time_t(char time[20]);
+int change_recvphone_t(char phone[15]);
+int serial_open(char * mouth);
+int serial_init(int fd);
+int recv_deal(recv_MSG *msg);
+int recv_msg(int fd,recv_MSG *msg);
+int send_msg(int fd,send_MSG msg);
+int  serial_send(send_MSG msg,int str_len,int fd);
+
+
+
+
+
+#endif

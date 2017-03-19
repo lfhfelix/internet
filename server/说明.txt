@@ -1,0 +1,16 @@
+目录:
+/c_src		.c文件资源
+/history	保存一些源码历史版本
+/image		web网页需要读取的图片资源
+/include	.h文件资源
+/main		.html文件资源
+
+/include
+debug.h		定义各模块通用的宏（指定要打开的串口，要控制的m0模块id）
+
+
+文件：
+server_a9		执行make后生成的在linux-arm(a9)环境可运行的二进制文件
+server_x86		执行make后生成的在linux-x86环境可运行的二进制文件
+start_a9.sh		程序自动执行脚本，检测进程server_a9死掉后，自动重启server_a9进程
+start_x86.sh		程序自动执行脚本，检测进程server_x86死掉后，自动重启server_x86进程

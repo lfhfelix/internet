@@ -1,0 +1,637 @@
+#include<stdio.h>
+#include<strings.h>
+#include <stdlib.h>
+#include<iconv.h>
+#include<string.h>
+#include <termios.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+
+#include "GSM/gsm.h"
+#include "GSM/sendiconv.h"
+#include "include/serial8.h"
+#include "include/msg.h"
+#include "include/serial8.h"
+
+#define GSM_SERIAL	"/dev/ttyUSB0"
+
+#define DEBUG 1
+int msq_id;
+
+/*************** 发送号码转换***************************/
+int change_sendphone_t(char phone[20])
+{
+	int i;
+	int b;
+	int len = strlen(phone);
+
+	for(i=0; i<len; )
+	{
+		b = phone[i];
+		phone[i] = phone[i+1];
+		phone[i+1] = b;
+		i = i+2;
+	}
+
+		strcat(phone,"\0");
+
+}
+/************************接收号码转换*****************************/
+int change_recvphone_t(char phone[15])
+{
+		int i;
+		int b;
+		int len = strlen(phone);
+
+		for(i=0; i<len; )
+		{
+			b = phone[i];
+			phone[i] = phone[i+1];
+			phone[i+1] = b;
+			i = i+2;
+
+
+		}
+		strcpy(&phone[i-1],"\0");
+}
+
+
+
+
+/**********************接收短信时间格式转换**************************/
+
+int change_time_t(char time[20])
+{
+		int i = 0,j = 0;
+		int b;
+		char d;
+		int len = strlen(time);
+		char string[len+20];
+		bzero(string,sizeof(string));
+		strncpy(&string[j++],&time[i++],1);
+		strncpy(&string[j++],&time[i++],1);
+		d = string[j-1];
+		string[j-1] =string[j-2];
+		string[j-2] = d; 
+		strncpy(&string[j++],"-",1);
+		strncpy(&string[j++],&time[i++],1);
+		strncpy(&string[j++],&time[i++],1);
+		d = string[j-1];
+		string[j-1] =string[j-2];
+		string[j-2] = d; 
+		strncpy(&string[j++],"-",1);
+		strncpy(&string[j++],&time[i++],1);
+		strncpy(&string[j++],&time[i++],1);
+		d = string[j-1];
+		string[j-1] =string[j-2];
+		string[j-2] = d; 
+		strncpy(&string[j++]," ",1);
+		strncpy(&string[j++],&time[i++],1);
+		strncpy(&string[j++],&time[i++],1);
+		d = string[j-1];
+		string[j-1] =string[j-2];
+		string[j-2] = d; 
+		strncpy(&string[j++],":",1);
+		strncpy(&string[j++],&time[i++],1);
+		strncpy(&string[j++],&time[i++],1);
+		d = string[j-1];
+		string[j-1] =string[j-2];
+		string[j-2] = d; 
+		strncpy(&string[j++],":",1);
+		strncpy(&string[j++],&time[i++],1);
+		strncpy(&string[j++],&time[i++],1);
+		d = string[j-1];
+		string[j-1] =string[j-2];
+		string[j-2] = d; 
+		memset(time,0,sizeof(time));
+		//printf("nihao\n");
+		strcpy(time,string);
+
+}
+
+/**************************打开串口****************************/
+
+int serial_open(char * mouth)
+{
+		int fd;
+		if(0 > (fd = open(mouth,O_RDWR|O_NOCTTY)))
+		{
+				perror("open");
+				return -1;				
+		}
+
+		if(isatty(fd) == 0)
+		{
+				printf("serial is not a terminal device \n");
+
+		}
+ 
+		return fd;
+}
+
+
+   /******************串口初始化****************************/
+
+
+int serial_init(int fd)
+{
+		struct termios options;
+		if(tcgetattr(fd,&options)!=0)
+		{
+				perror("set serial failed\n");
+				return -1;
+		} 
+		options.c_cflag &= ~CSIZE;
+		options.c_cflag|=CS8;
+		options.c_cflag |= CRTSCTS; 
+		options.c_cflag  |= ( CLOCAL | CREAD );
+		options.c_cflag &=  ~CSTOPB;
+		options.c_oflag=0;//输出模式  
+		options.c_lflag=0;//不激活终端模式   
+		options.c_cflag&=~OPOST;
+		options.c_cc[VTIME]=1;
+		options.c_cc[VMIN]=1;//1个字符
+		cfsetispeed(&options, B9600);
+		cfsetospeed(&options, B9600);
+		options.c_cflag &= ~PARENB;
+		tcflush(fd,TCIFLUSH);
+		if(tcsetattr(fd,TCSANOW,&options)!=0){
+				perror("serial set error!\n");
+				return -1;}
+		 
+		return 0;
+}
+
+
+
+
+/**************************短信控制**************************/
+
+int recv_deal(int fd, recv_MSG *msg)
+{
+	MSG m0_ctl_msg;
+	bzero(&m0_ctl_msg, sizeof(m0_ctl_msg));
+	send_MSG send_msg;
+	bzero(&send_msg, sizeof(send_msg));
+	if(0 == strncmp(msg->phone, "15680489676", 11))
+		{
+			if(0 == strncmp(msg->news,"EC32F9ED06",10))
+			{
+				m0_ctl_msg.msg_type = UART_CMD_M0;
+				strcpy(m0_ctl_msg.msg_data, "LED_ON");
+				msg_queue_insert(msq_id, m0_ctl_msg);
+			}											/*开灯*/
+			
+				
+			else if(0 == strncmp(msg->news,"EC32F96D3603",12))
+			{
+				m0_ctl_msg.msg_type = UART_CMD_M0;
+				strcpy(m0_ctl_msg.msg_data, "LED_OFF");
+				msg_queue_insert(msq_id, m0_ctl_msg);
+			}										/*关灯*/
+			
+			
+			else if(0 == strncmp(msg->news,"E6B0FBED06",10))
+			{
+				m0_ctl_msg.msg_type = UART_CMD_M0;
+				strcpy(m0_ctl_msg.msg_data, "FAN_ON");
+				msg_queue_insert(msq_id, m0_ctl_msg);
+						
+			}												/*开风扇*/
+			
+			
+			else if(0 == strncmp(msg->news,"E6B0FB6D3603",12))
+			{
+				bzero(msg->news,sizeof(msg->news));
+				strncpy(msg->news,"fanoff",6);
+				m0_ctl_msg.msg_type = UART_CMD_M0;
+				strcpy(m0_ctl_msg.msg_data, "FAN_OFF");
+				msg_queue_insert(msq_id, m0_ctl_msg);
+						
+			}												/*关风扇*/
+			
+			
+			else if(0 == strncmp(msg->news,"83B753D673AF58834FE1606F",24))
+			{
+			
+				bzero(msg->news,sizeof(msg->news));
+				sprintf(msg->news, "温度:%d°C 湿度:%d%%RH 光照强度:%dLUX", \
+				env_msg.tmp, env_msg.hum, env_msg.light);
+				bzero(&send_msg, sizeof(send_msg));
+				strcat(send_msg.phone,"86");
+				strcat(send_msg.phone, msg->phone);
+				strcpy(send_msg.news, msg->news);
+				serial_send(send_msg, strlen(send_msg.news), fd);
+			
+			}												/*发送环境信息*/
+			
+			else if(0 == strncmp(msg->news,"E2BA5EFF369B01",14))
+			{
+				m0_ctl_msg.msg_type = UART_CMD_M0;
+				strcpy(m0_ctl_msg.msg_data, "BUZZ_OFF");
+				msg_queue_insert(msq_id, m0_ctl_msg);
+						
+			} 												/*蜂鸣器响*/
+			
+			else if(0 == strncmp(msg->news,"E2BA5EFF7603",12))
+			{
+				m0_ctl_msg.msg_type = UART_CMD_M0;
+				strcpy(m0_ctl_msg.msg_data, "BUZZ_ON");
+				msg_queue_insert(msq_id, m0_ctl_msg);
+						
+			} 												/*蜂鸣器灭*/
+			
+			
+			else 
+			{
+				bzero(msg->news,sizeof(msg->news));
+				strcpy(msg->news, "help:ledon,ledoff,fanon,fanoff,buzzon,buzzoff,获取环境信息");
+				bzero(send_msg.phone, sizeof(send_msg.phone));
+				strcat(send_msg.phone,"86");
+				strcat(send_msg.phone, msg->phone);
+				strcpy(send_msg.news, msg->news);
+				serial_send(send_msg, 52, fd);
+			}											/*help文档*/
+		}	
+		
+		
+		bzero(msg->news,sizeof(msg->news));
+		bzero(&send_msg, sizeof(send_msg));
+}
+
+
+/***************************接收信息处理*******************************/
+int recv_msg(int fd,recv_MSG *msg)
+{
+		char send_buf[1024] = {0};
+		char recv_buf[1024] = {0};
+		int n_write;
+		int n_read;
+		 
+		sleep(2);
+		memset(send_buf,0,sizeof(send_buf));
+		strcpy(send_buf,"AT");
+		strcat(send_buf,"\r");
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)   
+		{
+				printf("send AT error\n");
+				return(-1);
+		}
+		 sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+#if DEBUG
+		puts(recv_buf);
+#endif
+		
+		
+		memset(send_buf,0,sizeof(send_buf));
+		strcpy(send_buf,"AT+CMGF=0");
+		strcat(send_buf,"\r");
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)
+		{
+				printf("send type error\n");
+				return(-1);
+		}
+		
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+#if DEBUG
+	printf("%s",recv_buf);
+	printf("nihao\n");
+#endif
+
+#if 1
+		//sleep(2);
+		memset(send_buf,0,sizeof(send_buf));
+		strcpy(send_buf,"AT+CPMS?");
+		strcat(send_buf,"\r");
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)
+		{
+				printf("send type error\n");
+				return(-1);
+		}
+		
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+#endif
+
+#if DEBUG
+	printf("%s",recv_buf);
+#endif
+
+
+/***********************读短信*****************************/
+		//sleep(2);
+		memset(send_buf,0,sizeof(send_buf));
+		strcpy(send_buf,"AT+CMGR=1");
+		strcat(send_buf,"\r");
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)
+		{
+				printf("send type error\n");
+				return(-1);
+		}
+		
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+#if DEBUG
+	printf("%s",recv_buf);
+#endif
+
+
+/*************信息来源处理*********************/
+
+
+		memset(msg->phone,0,sizeof(msg->phone));
+		char *p = recv_buf;
+		p = p+52;
+		if(strncmp(p,"68",2)!= 0);
+		else
+		{
+				p = p+2;
+		
+		}
+		memcpy(msg->phone,p,12);
+		change_recvphone_t(msg->phone);
+
+/****************信息时间处理*****************************/
+
+		memset(msg->time,0,sizeof(msg->time));
+		strncpy(msg->time,p+16,12);
+		change_time_t(msg->time);
+		
+/*****************信息内容处理*****************************/
+		
+		if(strlen(recv_buf) >16)
+		{
+				memset(msg->news,0,sizeof(msg->news));
+				strncpy(msg->news,p+32,strlen(recv_buf)-92);
+		/**********************显示消息**********************************/
+
+				printf("信息来源:\n");
+				puts(msg->phone);
+				printf("\n时间:\n");
+				puts(msg->time);
+				printf("\n信息:\n");
+				puts(msg->news);	
+				recv_deal(fd, msg);
+		}
+		else
+		{
+				printf("no sms message!\n");		
+				
+		}
+/***************是否删除新信息处理******************************/
+#if 1
+		//sleep(2);
+		memset(send_buf,0,sizeof(send_buf));
+		strcpy(send_buf,"AT+CMGD=1");
+		strcat(send_buf,"\r");
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)
+		{
+				printf("send type error\n");
+				return(-1);
+		}
+		
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+#if DEBUG
+	printf("%s",recv_buf);
+#endif
+#endif
+}
+
+#if 1
+int send_msg(int fd,send_MSG msg)
+{
+		sleep(2);
+		char mid_buf[1024];
+		char send_buf[1024];
+		char recv_buf[1024];
+		int n_write;
+		int n_read;
+		
+		fd = serial_open("/dev/ttyUSB0");
+		printf("fd = %d\n", fd);
+		serial_init(fd);
+/********************测试是否与串口联通****************************/
+		memset(send_buf,0,sizeof(send_buf));
+		strcpy(send_buf,"AT");
+		strcat(send_buf,"\r");
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)
+		{
+				printf("send AT error\n");
+				return(-1);
+		}
+		
+		printf("-----------------------------------\n");
+
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+		puts(recv_buf);
+		printf("----------------1------------------\n");
+/***********************模式选择********************************/
+
+		sleep(2);
+		memset(send_buf,0,sizeof(send_buf));
+		strcpy(send_buf,"AT+CMGF=0");
+		strcat(send_buf,"\r");
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)
+		{
+				printf("send type error\n");
+				return(-1);
+		}
+
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+		//printf("%s",recv_buf);
+#endif
+/********************发送信息获取******************************/
+#if 1
+		sleep(2);
+		memset(send_buf,0,sizeof(send_buf));
+		char buf1[] = "0011000D91";
+		char buf2[128];
+		memset(buf2,0,sizeof(buf2));
+		strcpy(buf2,msg.phone);
+		char buf3[] = "000801";
+		char buf4[1024];
+		memset(buf4,0,sizeof(buf4));
+		strcpy(buf4,msg.news);
+		strcpy(send_buf,buf1);
+		strcat(send_buf,buf2);
+		strcat(send_buf,buf3);
+		strcat(send_buf,buf4);
+		puts(send_buf);
+		memset(mid_buf,0,sizeof(send_buf));
+		strcpy(mid_buf,send_buf);
+
+/*********************发送长度设置************************************/
+		int m = (strlen(send_buf)/2) - 1;
+		sleep(2);
+		memset(send_buf,0,sizeof(send_buf));
+		sprintf(send_buf,"AT+CMGS=%d",m);
+		strcat(send_buf,"\r");
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)
+		{
+				printf("send number error\n");
+				return(-1);
+		}
+
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+		printf("%s",recv_buf);
+
+
+/*******************发送***********************************/
+		
+		sleep(2);
+		strcpy(send_buf,mid_buf);		
+		
+		if((n_write = write(fd, send_buf, strlen(send_buf))) == -1)
+		{
+				printf("send AT error\n");
+				return(-1);
+		}
+
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+		printf("%s",recv_buf);
+
+
+/**********************结束处理**************************/
+
+		if((n_write = write(fd, "\x1a", strlen(send_buf))) == -1)
+		{
+				printf("send AT error\n");
+				return(-1);
+		}
+
+		sleep(2);
+		memset(recv_buf,0,sizeof(recv_buf));
+		if((n_read = read(fd,recv_buf,sizeof(recv_buf)) ) < 0)
+		{
+				perror("read");
+				return -1;
+		}
+		printf("%s",recv_buf);	
+		close(fd);
+}
+
+#endif
+						
+
+
+#if 1
+int  serial_send(send_MSG msg,int str_len,int fd)
+{
+		 
+		puts(msg.news);
+		strcat(msg.phone,"F");
+		change_sendphone_t(msg.phone);
+		puts(msg.phone);
+		printf("%d\n",strlen(msg.phone));
+		puts(msg.news);
+		char outbuf_temp[1024];
+		char *outbuf = outbuf_temp;
+		 
+		if(0 != iconv_fun(msg.news,&outbuf,str_len))
+		{
+				perror("iconv_t");
+				
+		}
+
+		bzero(msg.news,sizeof(msg.news));
+		strcpy(msg.news,outbuf);
+		
+		send_msg( fd,msg);/*发消息*/
+		 
+}
+#endif
+
+ 
+//void *sms_run(void *arg)
+void *sms_run(void *arg)
+{
+	int fd = serial_open(GSM_SERIAL);
+	serial_init(fd);
+	send_MSG msg;
+	recv_MSG recv_buf;
+	printf("sms_init ok(serial_fd = %d)\n", fd);
+	msq_id = *(int *)arg;
+	while(1)
+	{
+		bzero(recv_buf.phone, sizeof(recv_buf.phone));
+		bzero(recv_buf.time, sizeof(recv_buf.time));
+		bzero(recv_buf.news, sizeof(recv_buf.news));
+		recv_msg(fd,&recv_buf);
+	}				
+}
+
+#if 0
+int main()
+{
+		int fd = serial_open("/dev/ttyUSB0");
+		printf("fd = %d\n", fd);
+		serial_init(fd);
+		//MSG msg;
+		recv_MSG recv_buf;
+		//strcpy(msg.phone,"8615680489676");
+		//strcpy(msg.news ,"解放后热管人哦规划哦体会哦herbfe巍峨复活节看完而非热烈夫人");
+		//serial_send(msg,32,fd);
+	while(1)
+	{
+		bzero(recv_buf.phone,sizeof(recv_buf.phone));
+		bzero(recv_buf.time,sizeof(recv_buf.time));
+		bzero(recv_buf.news,sizeof(recv_buf.news));
+
+		recv_msg(fd,&recv_buf);
+	}		
+}
+
+#endif

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:orientation = "vertical"
+    android:background="@drawable/p1"
+     >
+<RelativeLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+     >
+
+    <ImageView
+        android:id="@+id/iv_Mon_act"
+        android:layout_width="480dp"
+        android:layout_height="320dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:src="#ff000000" >
+    </ImageView>
+</RelativeLayout>
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal" >
+<!--  
+        <Button
+            android:id="@+id/btn_Mon_mon"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="监控" />
+-->
+
+        <Button
+            android:id="@+id/btn_Mon_con"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="控制" />
+    </LinearLayout>
+        <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal" >
+        
+        <ToggleButton
+            android:id="@+id/toggleButton"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:textOff="打开监控"
+            android:textOn="关闭监控" />
+        
+        <ToggleButton
+            android:id="@+id/toggleButton1"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:textOff="启动报警"
+            android:textOn="关闭报警" />
+            </LinearLayout>
+</LinearLayout>
